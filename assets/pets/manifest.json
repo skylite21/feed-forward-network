@@ -1,0 +1,128 @@
+{
+  "generatedAt": "2026-03-03T14:17:18Z",
+  "size": 840,
+  "cats": [
+    {
+      "kind": "cat",
+      "path": "assets/pets/cats/cat-01.jpg",
+      "source": "https://cataas.com/cat?width=840&height=840&ts=1772547427929-1-237508",
+      "fallback": false
+    },
+    {
+      "kind": "cat",
+      "path": "assets/pets/cats/cat-02.jpg",
+      "source": "https://cataas.com/cat?width=840&height=840&ts=1772547428410-2-948922",
+      "fallback": false
+    },
+    {
+      "kind": "cat",
+      "path": "assets/pets/cats/cat-03.jpg",
+      "source": "https://cataas.com/cat?width=840&height=840&ts=1772547428871-3-242940",
+      "fallback": false
+    },
+    {
+      "kind": "cat",
+      "path": "assets/pets/cats/cat-04.jpg",
+      "source": "https://cataas.com/cat?width=840&height=840&ts=1772547429294-4-820463",
+      "fallback": false
+    },
+    {
+      "kind": "cat",
+      "path": "assets/pets/cats/cat-05.jpg",
+      "source": "https://cataas.com/cat?width=840&height=840&ts=1772547431615-5-338790",
+      "fallback": false
+    },
+    {
+      "kind": "cat",
+      "path": "assets/pets/cats/cat-06.jpg",
+      "source": "https://cataas.com/cat?width=840&height=840&ts=1772547432095-6-547564",
+      "fallback": false
+    },
+    {
+      "kind": "cat",
+      "path": "assets/pets/cats/cat-07.jpg",
+      "source": "https://cataas.com/cat?width=840&height=840&ts=1772547432592-7-299103",
+      "fallback": false
+    },
+    {
+      "kind": "cat",
+      "path": "assets/pets/cats/cat-08.jpg",
+      "source": "https://cataas.com/cat?width=840&height=840&ts=1772547433015-8-908178",
+      "fallback": false
+    },
+    {
+      "kind": "cat",
+      "path": "assets/pets/cats/cat-09.jpg",
+      "source": "https://cataas.com/cat?width=840&height=840&ts=1772547433479-9-233454",
+      "fallback": false
+    },
+    {
+      "kind": "cat",
+      "path": "assets/pets/cats/cat-10.jpg",
+      "source": "https://cataas.com/cat?width=840&height=840&ts=1772547433936-10-985711",
+      "fallback": false
+    }
+  ],
+  "dogs": [
+    {
+      "kind": "dog",
+      "path": "assets/pets/dogs/dog-01.jpg",
+      "source": "https://images.dog.ceo/breeds/labradoodle/Cali.jpg",
+      "fallback": false
+    },
+    {
+      "kind": "dog",
+      "path": "assets/pets/dogs/dog-02.jpg",
+      "source": "https://images.dog.ceo/breeds/wolfhound-irish/n02090721_2170.jpg",
+      "fallback": false
+    },
+    {
+      "kind": "dog",
+      "path": "assets/pets/dogs/dog-03.jpg",
+      "source": "https://images.dog.ceo/breeds/sheepdog-shetland/n02105855_13586.jpg",
+      "fallback": false
+    },
+    {
+      "kind": "dog",
+      "path": "assets/pets/dogs/dog-04.jpg",
+      "source": "https://images.dog.ceo/breeds/spaniel-blenheim/n02086646_2409.jpg",
+      "fallback": false
+    },
+    {
+      "kind": "dog",
+      "path": "assets/pets/dogs/dog-05.jpg",
+      "source": "https://images.dog.ceo/breeds/kombai/Kombai-indian-Dog.jpg",
+      "fallback": false
+    },
+    {
+      "kind": "dog",
+      "path": "assets/pets/dogs/dog-06.jpg",
+      "source": "https://images.dog.ceo/breeds/kombai/Kombai-indian-Dog.jpg",
+      "fallback": false
+    },
+    {
+      "kind": "dog",
+      "path": "assets/pets/dogs/dog-07.jpg",
+      "source": "https://images.dog.ceo/breeds/terrier-dandie/n02096437_1760.jpg",
+      "fallback": false
+    },
+    {
+      "kind": "dog",
+      "path": "assets/pets/dogs/dog-08.jpg",
+      "source": "https://images.dog.ceo/breeds/affenpinscher/n02110627_6991.jpg",
+      "fallback": false
+    },
+    {
+      "kind": "dog",
+      "path": "assets/pets/dogs/dog-09.jpg",
+      "source": "https://images.dog.ceo/breeds/vizsla/n02100583_14231.jpg",
+      "fallback": false
+    },
+    {
+      "kind": "dog",
+      "path": "assets/pets/dogs/dog-10.jpg",
+      "source": "https://images.dog.ceo/breeds/hound-walker/n02089867_1381.jpg",
+      "fallback": false
+    }
+  ]
+}

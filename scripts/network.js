@@ -43,6 +43,22 @@
   let statusTimeoutId = null;
   let statusHideTimeoutId = null;
   let currentPetImageUrl = '';
+  const petSpotlightSize = 840;
+  const petImages = {
+    cat: Array.from({ length: 10 }, (_, index) => `assets/pets/cats/cat-${String(index + 1).padStart(2, '0')}.jpg`),
+    dog: Array.from({ length: 10 }, (_, index) => `assets/pets/dogs/dog-${String(index + 1).padStart(2, '0')}.jpg`)
+  };
+  const petFallbackImages = {
+    cat: Array.from({ length: 3 }, (_, index) => `assets/pets/fallback/cat-fallback-${String(index + 1).padStart(2, '0')}.jpg`),
+    dog: Array.from({ length: 3 }, (_, index) => `assets/pets/fallback/dog-fallback-${String(index + 1).padStart(2, '0')}.jpg`)
+  };
+
+  function pickRandom(list) {
+    if (!Array.isArray(list) || list.length === 0) {
+      return '';
+    }
+    return list[Math.floor(Math.random() * list.length)];
+  }
 
   function setStatus(message) {
     if (!statusEl) {
@@ -378,18 +394,41 @@
       return;
     }
     const isCat = Math.random() >= 0.5;
-    currentPetType = isCat ? 'cat' : 'dog';
-    const cacheBust = Date.now();
-    const imageUrl = isCat ? `https://cataas.com/cat?width=280&height=280&ts=${cacheBust}` : `https://place.dog/280/280?random=${cacheBust}`;
+    const kind = isCat ? 'cat' : 'dog';
+    currentPetType = kind;
+
+    let imageUrl = pickRandom(petImages[kind]);
+    if (!imageUrl) {
+      imageUrl = pickRandom(petFallbackImages[kind]);
+    }
+    if (!imageUrl) {
+      return;
+    }
+
+    const label = isCat ? 'Macska' : 'Kutya';
+    const alt = isCat ? 'Véletlen macska' : 'Véletlen kutya';
+
+    petPreviewImg.onerror = () => {
+      petPreviewImg.onerror = null;
+      const fallbackUrl = pickRandom(petFallbackImages[kind]);
+      if (fallbackUrl) {
+        petPreviewImg.src = fallbackUrl;
+        currentPetImageUrl = fallbackUrl;
+        if (petPreviewLink) {
+          petPreviewLink.href = fallbackUrl;
+        }
+      }
+    };
+
     petPreviewImg.src = imageUrl;
     currentPetImageUrl = imageUrl;
     if (petPreviewLink) {
       petPreviewLink.href = imageUrl;
-      petPreviewLink.setAttribute('data-spotlight-height', '840');
-      petPreviewLink.setAttribute('data-spotlight-width', '840');
+      petPreviewLink.setAttribute('data-spotlight-height', String(petSpotlightSize));
+      petPreviewLink.setAttribute('data-spotlight-width', String(petSpotlightSize));
     }
-    petPreviewImg.alt = isCat ? 'Véletlen macska' : 'Véletlen kutya';
-    petPreviewLabelEl.textContent = isCat ? 'Macska' : 'Kutya';
+    petPreviewImg.alt = alt;
+    petPreviewLabelEl.textContent = label;
     petPreviewEl?.setAttribute('data-pet-type', currentPetType);
   }
 
