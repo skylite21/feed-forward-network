@@ -448,7 +448,11 @@ svg#connections line {
   opacity: 0.9;
   pointer-events: visibleStroke;
   cursor: pointer;
-  transition: stroke-width 0.18s ease;
+  transition: stroke-width 0.18s ease, opacity 0.18s ease;
+}
+
+svg#connections line.connection-line--dimmed {
+  opacity: 0.14;
 }
 
 svg#connections line.connection-overlay-line {
@@ -475,7 +479,12 @@ svg#connections line.connection-overlay-line {
   cursor: pointer;
   z-index: 3;
   pointer-events: auto;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease,
+    opacity 0.18s ease;
+}
+
+.connection-handle--dimmed {
+  opacity: 0.15;
 }
 
 

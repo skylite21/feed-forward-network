@@ -125,8 +125,27 @@
     const hoverBonus = (connection.isPointerHover ? 3 : 0) + (connection.isExpressionHover ? 4 : 0);
     const strokeWidth = connection.baseStroke + hoverBonus;
     const color = connection.isExpressionHover ? expressionHighlightColor : weightToColor(connection.weight);
+    const isDimmed = activeNeuron &&
+      connection.from !== activeNeuron &&
+      connection.to !== activeNeuron;
     connection.line.setAttribute('stroke', color);
     connection.line.setAttribute('stroke-width', strokeWidth);
+    connection.line.classList.toggle('connection-line--dimmed', Boolean(isDimmed));
+    if (connection.handleEl) {
+      connection.handleEl.classList.toggle('connection-handle--dimmed', Boolean(isDimmed));
+    }
+  }
+
+  function refreshAllConnectionStyles() {
+    connections.forEach((connection) => {
+      refreshConnectionStroke(connection);
+    });
+  }
+
+  function clearExpressionConnectionHighlights() {
+    connections.forEach((connection) => {
+      connection.isExpressionHover = false;
+    });
   }
 
   function buildLayers() {
@@ -1220,7 +1239,9 @@
 
   function showNeuronPanel(neuron) {
     hideWeightPanel();
+    clearExpressionConnectionHighlights();
     activeNeuron = neuron;
+    refreshAllConnectionStyles();
     updateNeuronPanelContent(neuron);
     neuronPanel.style.display = 'flex';
     setStatus(`Neuron megnyitva: ${neuron.titleEl.textContent}`);
@@ -1231,18 +1252,12 @@
 
   function hideNeuronPanel() {
     hideHiddenNeuronControls();
-    if (activeNeuron) {
-      activeNeuron.incoming.forEach((connection) => {
-        if (connection.isExpressionHover) {
-          connection.isExpressionHover = false;
-          refreshConnectionStroke(connection);
-        }
-      });
-    }
+    clearExpressionConnectionHighlights();
     neuronExpressionEl.querySelectorAll('.neuron-expression-line--active').forEach((lineEl) => {
       lineEl.classList.remove('neuron-expression-line--active');
     });
     activeNeuron = null;
+    refreshAllConnectionStyles();
     neuronPanel.style.display = 'none';
   }
 
