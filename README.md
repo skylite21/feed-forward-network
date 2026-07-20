@@ -15,4 +15,4 @@ Ez az egyoldalas demó egy előrecsatolt neurális háló vizuális felületét 
 ## GitHub Pages publikálás
 1. Győződj meg róla, hogy a változtatások a `master` ágon commitolva és a `github` távolihoz pusholva vannak.
 2. Frissítsd a Pages ágat: `git checkout gh-pages && git merge master && git push github gh-pages`.
-3. A weboldal a https://skylite21.github.io/feed-forwad-network/ címen frissül, miután a GitHub Pages build lefutott.
+3. A weboldal a https://skylite21.github.io/feed-forward-network/ címen frissül, miután a GitHub Pages build lefutott.

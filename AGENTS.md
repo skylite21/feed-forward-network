@@ -20,6 +20,6 @@ History currently uses concise, imperative messages (`initial commit`). Continue
 ## GitHub Pages Publishing
 - The public site is hosted from the `gh-pages` branch. The root of that branch contains the same `index.html`, so no `/docs` folder is required.
 - After committing to `master`, update the Pages branch with `git checkout gh-pages && git merge master && git push github gh-pages`. Alternatively, recreate it from master via `git push github master:gh-pages`.
-- Ensure the GitHub remote is set to `git@github.com:skylite21/feed-forwad-network.git`, and keep `gh-pages` configured as the Pages source (already set in repository settings).
-- If the repo is cloned fresh, run `git remote add github git@github.com:skylite21/feed-forwad-network.git` (if missing), then push both `master` and `gh-pages`.
-- Verify deployment on https://skylite21.github.io/feed-forwad-network/ once GitHub Pages finishes building (typically under one minute).***
+- Ensure the GitHub remote is set to `git@github.com:skylite21/feed-forward-network.git`, and keep `gh-pages` configured as the Pages source (already set in repository settings).
+- If the repo is cloned fresh, run `git remote add github git@github.com:skylite21/feed-forward-network.git` (if missing), then push both `master` and `gh-pages`.
+- Verify deployment on https://skylite21.github.io/feed-forward-network/ once GitHub Pages finishes building (typically under one minute).***
