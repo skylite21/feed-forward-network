@@ -603,6 +603,80 @@ svg#connections line.connection-overlay-line {
   color: #475569;
 }
 
+.neuron-expression-help {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.neuron-expression-help-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.18rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #475569;
+  font: inherit;
+  font-weight: 700;
+  cursor: help;
+  text-decoration: underline dotted rgba(71, 85, 105, 0.7);
+  text-underline-offset: 0.16em;
+}
+
+.neuron-expression-help-trigger:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 0.2rem;
+}
+
+.neuron-expression-help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.12);
+  color: #1e40af;
+  font-family: system-ui, sans-serif;
+  font-size: 0.64rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.neuron-expression-tooltip {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 0.55rem);
+  z-index: 10;
+  box-sizing: border-box;
+  width: 220px;
+  max-width: calc(100vw - 2rem);
+  padding: 0.55rem 0.65rem;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  border-radius: 0.55rem;
+  background: #f8fafc;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+  color: #243b53;
+  font-family: system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: left;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+  pointer-events: none;
+}
+
+.neuron-expression-help--open .neuron-expression-tooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .neuron-expression-line:hover,
 .neuron-expression-line--active {
   background: rgba(251, 146, 60, 0.24);

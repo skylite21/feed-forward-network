@@ -1267,7 +1267,7 @@
     const equalsMarkup = '<span class="neuron-expression-operator"> = </span>';
     const weightedSumMarkup = '<div class="neuron-expression-summary">' + summaryMarkup + equalsMarkup + '<strong class="neuron-expression-result">' + formatNumber(expression.preActivation) + '</strong></div>';
     const activationMarkup = expression.usesSigmoid
-      ? '<div class="neuron-expression-summary"><span class="neuron-expression-activation">szigmoid(</span>' + summaryMarkup + '<span class="neuron-expression-activation">)</span>' + equalsMarkup + '<strong class="neuron-expression-result">' + formatNumber(neuron.value) + '</strong></div>'
+      ? '<div class="neuron-expression-summary"><span class="neuron-expression-help"><button type="button" class="neuron-expression-help-trigger" aria-describedby="sigmoid-help-tooltip" aria-expanded="false">szigmoid<span class="neuron-expression-help-icon" aria-hidden="true">?</span></button><span id="sigmoid-help-tooltip" class="neuron-expression-tooltip" role="tooltip">A súlyozott összeg lehet negatív vagy nagyon nagy. A szigmoid ezt 0 és 1 közötti kimenetté alakítja, így a kijelzett eredmény nem lehet negatív vagy korlátlanul nagy, és használható a kutya–macska besoroláshoz.</span></span><span class="neuron-expression-activation">(</span>' + summaryMarkup + '<span class="neuron-expression-activation">)</span>' + equalsMarkup + '<strong class="neuron-expression-result">' + formatNumber(neuron.value) + '</strong></div>'
       : '';
     neuronExpressionEl.innerHTML =
       '<div class="neuron-expression-list">' + lineMarkup + '</div>' +
@@ -1315,6 +1315,34 @@
         setExpressionConnectionHover(idAttr, false);
       });
     });
+
+    const sigmoidHelpEl = neuronExpressionEl.querySelector('.neuron-expression-help');
+    const sigmoidHelpTriggerEl = neuronExpressionEl.querySelector('.neuron-expression-help-trigger');
+    if (sigmoidHelpEl && sigmoidHelpTriggerEl) {
+      const openSigmoidTooltip = () => {
+        sigmoidHelpEl.classList.add('neuron-expression-help--open');
+        sigmoidHelpTriggerEl.setAttribute('aria-expanded', 'true');
+      };
+      const closeSigmoidTooltip = () => {
+        sigmoidHelpEl.classList.remove('neuron-expression-help--open');
+        sigmoidHelpTriggerEl.setAttribute('aria-expanded', 'false');
+      };
+
+      sigmoidHelpEl.addEventListener('mouseenter', openSigmoidTooltip);
+      sigmoidHelpEl.addEventListener('mouseleave', () => {
+        if (document.activeElement !== sigmoidHelpTriggerEl) {
+          closeSigmoidTooltip();
+        }
+      });
+      sigmoidHelpTriggerEl.addEventListener('focus', openSigmoidTooltip);
+      sigmoidHelpTriggerEl.addEventListener('blur', closeSigmoidTooltip);
+      sigmoidHelpTriggerEl.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeSigmoidTooltip();
+        }
+      });
+    }
   }
 
   function showNeuronPanel(neuron) {
