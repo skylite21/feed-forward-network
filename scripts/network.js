@@ -1222,7 +1222,6 @@
     if (!neuron.incoming.length) {
       return {
         lines: [],
-        summaryParts: [],
         note: 'Ez a neuron rögzített bemeneti értéket tart: ' + formatNumber(neuron.value) + '.'
       };
     }
@@ -1233,11 +1232,8 @@
       connectionId: connection.id
     }));
 
-    const summaryParts = neuron.incoming.map((connection) => '(' + formatNumber(connection.lastInput) + ' * ' + formatNumber(connection.weight) + ')');
-
     return {
       lines,
-      summaryParts,
       preActivation: neuron.preActivation,
       usesSigmoid: neuron.layerIndex === layerSizes.length - 1,
       note: ''
@@ -1259,12 +1255,14 @@
       return;
     }
 
+    const buildTermMarkup = (entry, termIndex) =>
+      '<span class="neuron-expression-term neuron-expression-term--palette-' + (termIndex % 4) + '" data-connection-id="' + entry.connectionId + '" data-term-index="' + termIndex + '">' + entry.term + '</span>';
     const lineMarkup = expression.lines
-      .map((entry) => '<div class="neuron-expression-line" data-connection-id="' + entry.connectionId + '"><span class="neuron-expression-term">' + entry.term + '</span><span class="neuron-expression-result">' + entry.result + '</span></div>')
+      .map((entry, termIndex) => '<div class="neuron-expression-line" data-connection-id="' + entry.connectionId + '">' + buildTermMarkup(entry, termIndex) + '<span class="neuron-expression-result">' + entry.result + '</span></div>')
       .join('');
 
-    const summaryMarkup = expression.summaryParts
-      .map((part) => '<span class="neuron-expression-term">' + part + '</span>')
+    const summaryMarkup = expression.lines
+      .map(buildTermMarkup)
       .join('<span class="neuron-expression-operator"> + </span>');
     const equalsMarkup = '<span class="neuron-expression-operator"> = </span>';
     const weightedSumMarkup = '<div class="neuron-expression-summary">' + summaryMarkup + equalsMarkup + '<strong class="neuron-expression-result">' + formatNumber(expression.preActivation) + '</strong></div>';
@@ -1276,9 +1274,7 @@
       weightedSumMarkup +
       activationMarkup;
 
-    const expressionLines = neuronExpressionEl.querySelectorAll('.neuron-expression-line');
-    expressionLines.forEach((lineEl) => {
-      const idAttr = lineEl.getAttribute('data-connection-id');
+    function setExpressionConnectionHover(idAttr, isActive) {
       if (!idAttr) {
         return;
       }
@@ -1286,15 +1282,37 @@
       if (!connection) {
         return;
       }
+      connection.isExpressionHover = isActive;
+      neuronExpressionEl.querySelectorAll('[data-connection-id="' + idAttr + '"]').forEach((element) => {
+        if (element.classList.contains('neuron-expression-line')) {
+          element.classList.toggle('neuron-expression-line--active', isActive);
+        }
+        if (element.classList.contains('neuron-expression-term')) {
+          element.classList.toggle('neuron-expression-term--active', isActive);
+        }
+      });
+      refreshConnectionStroke(connection);
+    }
+
+    const expressionLines = neuronExpressionEl.querySelectorAll('.neuron-expression-line');
+    expressionLines.forEach((lineEl) => {
+      const idAttr = lineEl.getAttribute('data-connection-id');
       lineEl.addEventListener('mouseenter', () => {
-        connection.isExpressionHover = true;
-        lineEl.classList.add('neuron-expression-line--active');
-        refreshConnectionStroke(connection);
+        setExpressionConnectionHover(idAttr, true);
       });
       lineEl.addEventListener('mouseleave', () => {
-        connection.isExpressionHover = false;
-        lineEl.classList.remove('neuron-expression-line--active');
-        refreshConnectionStroke(connection);
+        setExpressionConnectionHover(idAttr, false);
+      });
+    });
+
+    const summaryTerms = neuronExpressionEl.querySelectorAll('.neuron-expression-summary .neuron-expression-term');
+    summaryTerms.forEach((termEl) => {
+      const idAttr = termEl.getAttribute('data-connection-id');
+      termEl.addEventListener('mouseenter', () => {
+        setExpressionConnectionHover(idAttr, true);
+      });
+      termEl.addEventListener('mouseleave', () => {
+        setExpressionConnectionHover(idAttr, false);
       });
     });
   }
@@ -1317,6 +1335,9 @@
     clearExpressionConnectionHighlights();
     neuronExpressionEl.querySelectorAll('.neuron-expression-line--active').forEach((lineEl) => {
       lineEl.classList.remove('neuron-expression-line--active');
+    });
+    neuronExpressionEl.querySelectorAll('.neuron-expression-term--active').forEach((termEl) => {
+      termEl.classList.remove('neuron-expression-term--active');
     });
     activeNeuron = null;
     refreshAllConnectionStyles();
