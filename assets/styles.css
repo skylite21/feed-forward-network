@@ -562,6 +562,23 @@ svg#connections line.connection-overlay-line {
   color: #0b2541;
 }
 
+.neuron-expression .neuron-expression-term {
+  color: #1e3a8a;
+}
+
+.neuron-expression .neuron-expression-operator {
+  color: #64748b;
+  font-weight: 700;
+}
+
+.neuron-expression .neuron-expression-result {
+  color: #9a3412;
+}
+
+.neuron-expression .neuron-expression-activation {
+  color: #475569;
+}
+
 .neuron-expression-line:hover,
 .neuron-expression-line--active {
   background: rgba(251, 146, 60, 0.24);
@@ -576,6 +593,7 @@ svg#connections line.connection-overlay-line {
   border-top: 1px solid rgba(148, 163, 184, 0.45);
   font-size: 0.8rem;
   font-weight: 600;
+  line-height: 1.55;
   color: #102a43;
 }
 

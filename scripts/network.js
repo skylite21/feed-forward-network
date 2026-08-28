@@ -1228,12 +1228,12 @@
     }
 
     const lines = neuron.incoming.map((connection) => ({
-      term: formatNumber(connection.lastInput) + ' * ' + formatNumber(connection.weight),
+      term: '(' + formatNumber(connection.lastInput) + ' * ' + formatNumber(connection.weight) + ')',
       result: formatNumber(connection.lastContribution),
       connectionId: connection.id
     }));
 
-    const summaryParts = neuron.incoming.map((connection) => formatNumber(connection.lastInput) + ' * ' + formatNumber(connection.weight));
+    const summaryParts = neuron.incoming.map((connection) => '(' + formatNumber(connection.lastInput) + ' * ' + formatNumber(connection.weight) + ')');
 
     return {
       lines,
@@ -1260,13 +1260,16 @@
     }
 
     const lineMarkup = expression.lines
-      .map((entry) => '<div class="neuron-expression-line" data-connection-id="' + entry.connectionId + '"><span>' + entry.term + '</span><span>' + entry.result + '</span></div>')
+      .map((entry) => '<div class="neuron-expression-line" data-connection-id="' + entry.connectionId + '"><span class="neuron-expression-term">' + entry.term + '</span><span class="neuron-expression-result">' + entry.result + '</span></div>')
       .join('');
 
-    const summaryText = expression.summaryParts.join(' + ');
-    const weightedSumMarkup = '<div class="neuron-expression-summary">' + summaryText + ' = <strong>' + formatNumber(expression.preActivation) + '</strong></div>';
+    const summaryMarkup = expression.summaryParts
+      .map((part) => '<span class="neuron-expression-term">' + part + '</span>')
+      .join('<span class="neuron-expression-operator"> + </span>');
+    const equalsMarkup = '<span class="neuron-expression-operator"> = </span>';
+    const weightedSumMarkup = '<div class="neuron-expression-summary">' + summaryMarkup + equalsMarkup + '<strong class="neuron-expression-result">' + formatNumber(expression.preActivation) + '</strong></div>';
     const activationMarkup = expression.usesSigmoid
-      ? '<div class="neuron-expression-summary">szigmoid(' + formatNumber(expression.preActivation) + ') = <strong>' + formatNumber(neuron.value) + '</strong></div>'
+      ? '<div class="neuron-expression-summary"><span class="neuron-expression-activation">szigmoid(</span>' + summaryMarkup + '<span class="neuron-expression-activation">)</span>' + equalsMarkup + '<strong class="neuron-expression-result">' + formatNumber(neuron.value) + '</strong></div>'
       : '';
     neuronExpressionEl.innerHTML =
       '<div class="neuron-expression-list">' + lineMarkup + '</div>' +
