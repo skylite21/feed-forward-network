@@ -4,6 +4,8 @@
   const layerSizes = [inputValues.length, ...hiddenLayers, 1];
 
   const outputAdjustmentStep = 0.1;
+  const outputClassificationThreshold = 0.5;
+  const outputTargetTolerance = 0.01;
   const hiddenNeuronWeightStep = 0.1;
   const neuronPulseDuration = 200;
   const neuronValueEpsilon = 0.0001;
@@ -36,6 +38,8 @@
   let activeConnection = null;
   let activeNeuron = null;
   let activeControlNeuron = null;
+  let outputDecreaseButtonEl = null;
+  let outputIncreaseButtonEl = null;
   const connectionOverlayLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   svgEl.appendChild(connectionOverlayLayer);
   let activeOverlayLine = null;
@@ -205,6 +209,7 @@
           incoming: [],
           outgoing: [],
           value: 0,
+          preActivation: 0,
           midX: 0,
           midY: 0,
           isInitialized: false,
@@ -228,6 +233,8 @@
           increaseBtn.type = 'button';
           increaseBtn.textContent = '+';
           increaseBtn.setAttribute('aria-label', 'Kimeneti érték növelése');
+          outputDecreaseButtonEl = decreaseBtn;
+          outputIncreaseButtonEl = increaseBtn;
           controlsEl.appendChild(decreaseBtn);
           controlsEl.appendChild(increaseBtn);
           blockEl.appendChild(controlsEl);
@@ -521,6 +528,45 @@
     }
   }
 
+  function sigmoid(value) {
+    if (value >= 0) {
+      const scaled = Math.exp(-value);
+      return 1 / (1 + scaled);
+    }
+    const scaled = Math.exp(value);
+    return scaled / (1 + scaled);
+  }
+
+  function clampOutputTarget(value) {
+    return Math.max(0, Math.min(1, value));
+  }
+
+  function predictsCat(outputValue) {
+    return outputValue > outputClassificationThreshold;
+  }
+
+  function isOutputCorrectForTarget(outputValue, targetValue) {
+    return predictsCat(outputValue) === (targetValue === 1);
+  }
+
+  function computeOutputLossDelta(outputValue, targetValue) {
+    const boundedOutput = Math.max(1e-12, Math.min(1 - 1e-12, outputValue));
+    const lossGradient =
+      -targetValue / boundedOutput +
+      (1 - targetValue) / (1 - boundedOutput);
+    const sigmoidGradient = boundedOutput * (1 - boundedOutput);
+    return lossGradient * sigmoidGradient;
+  }
+
+  function updateOutputAdjustmentControls(outputValue) {
+    if (outputDecreaseButtonEl) {
+      outputDecreaseButtonEl.disabled = outputValue <= outputTargetTolerance;
+    }
+    if (outputIncreaseButtonEl) {
+      outputIncreaseButtonEl.disabled = outputValue >= 1 - outputTargetTolerance;
+    }
+  }
+
   function updateOutputPredictionLabel() {
     const lastLayerIndex = neuronsByLayer.length - 1;
     if (lastLayerIndex < 0) {
@@ -534,8 +580,8 @@
     if (!outputNeuron.predictionEl) {
       return;
     }
-    const predictedCat = outputNeuron.value >= 0.5;
-    const description = predictedCat ? '1-hez közeli' : '0-hoz közeli';
+    const predictedCat = predictsCat(outputNeuron.value);
+    const description = predictedCat ? '0,5 < kimenet ≤ 1' : '0 ≤ kimenet ≤ 0,5';
     const actualCat = currentPetType === 'cat';
     const isCorrect = currentPetType ? predictedCat === actualCat : predictedCat;
     const icon = outputNeuron.predictionEl.querySelector('.neuron-prediction-icon');
@@ -552,6 +598,7 @@
     }
     outputNeuron.predictionEl.classList.toggle('neuron-prediction-label--cat', predictedCat);
     outputNeuron.predictionEl.classList.toggle('neuron-prediction-label--dog', !predictedCat);
+    updateOutputAdjustmentControls(outputNeuron.value);
 
     // Update auto-correct button state
     updateAutoCorrectButtonState(isCorrect);
@@ -616,7 +663,9 @@
           connection.lastContribution = contribution;
           sum += contribution;
         });
-        updateNeuronValue(neuron, sum);
+        neuron.preActivation = sum;
+        const isOutputLayer = layerIndex === neuronsByLayer.length - 1;
+        updateNeuronValue(neuron, isOutputLayer ? sigmoid(sum) : sum);
       });
     }
 
@@ -646,10 +695,17 @@
     if (!outputLayer.length) {
       return;
     }
-    const targetValue = outputLayer[0].value + delta;
+    const currentValue = outputLayer[0].value;
+    const targetValue = clampOutputTarget(currentValue + delta);
+    const isAtRequestedBoundary =
+      (delta < 0 && currentValue <= outputTargetTolerance) ||
+      (delta > 0 && currentValue >= 1 - outputTargetTolerance);
+    if (isAtRequestedBoundary || Math.abs(targetValue - currentValue) <= neuronValueEpsilon) {
+      updateOutputAdjustmentControls(currentValue);
+      return;
+    }
     const success = adjustNetworkToTargetOutput(targetValue);
     if (!success) {
-      window.alert('Nem sikerült a hálót a kívánt kimenetre hangolni.');
       setStatus('Nem sikerült a kívánt kimenetet elérni.');
     } else {
       setStatus('Kimenet finomhangolva a kért értékhez.');
@@ -674,7 +730,7 @@
     }
     recomputeNetwork();
     const outputNeuron = outputLayer[0];
-    const predictedCat = outputNeuron.value >= 0.5;
+    const predictedCat = predictsCat(outputNeuron.value);
     const actualCat = currentPetType === 'cat';
     if (predictedCat === actualCat) {
       setStatus('A háló már helyes eredményt ad.');
@@ -717,14 +773,14 @@
     neuron.element.classList.add('neuron--auto-correct-highlight');
   }
 
-  function willNeuronMakeAdjustments(neuron, targetValue, tolerance, learningRate) {
+  function willNeuronMakeAdjustments(neuron, targetValue, learningRate) {
     // Check if this neuron would actually make any weight adjustments
     const outputLayer = neuronsByLayer[neuronsByLayer.length - 1];
     const currentOutput = outputLayer[0].value;
-    const error = currentOutput - targetValue;
+    const outputDelta = computeOutputLossDelta(currentOutput, targetValue);
 
-    if (Math.abs(error) <= tolerance) {
-      return false; // Already at target
+    if (isOutputCorrectForTarget(currentOutput, targetValue)) {
+      return false; // Already on the correct side of the classification threshold
     }
 
     const neuronGradients = computeNeuronGradients();
@@ -734,7 +790,7 @@
       if (!Number.isFinite(gradient) || gradient === 0) {
         continue;
       }
-      const weightDelta = learningRate * error * gradient;
+      const weightDelta = learningRate * outputDelta * gradient;
       // Check if this would result in an actual weight change after rounding
       const currentWeight = connection.weight;
       const newWeight = Math.round((currentWeight - weightDelta) * 100) / 100;
@@ -759,7 +815,6 @@
     }
 
     const targetValue = currentPetType === 'cat' ? 1 : 0;
-    const tolerance = 0.01;
     const maxIterationsPerNeuron = 50;
     const learningRate = 0.05;
 
@@ -800,16 +855,13 @@
       recomputeNetwork();
       const outputLayer = neuronsByLayer[neuronsByLayer.length - 1];
       const outputNeuron = outputLayer[0];
-      const currentError = Math.abs(outputNeuron.value - targetValue);
-
-      // Check if we've reached the target
-      if (currentError <= tolerance) {
+      if (isOutputCorrectForTarget(outputNeuron.value, targetValue)) {
         overallSuccess = true;
         break;
       }
 
       // Skip neurons that won't make any actual adjustments
-      if (!willNeuronMakeAdjustments(neuron, targetValue, tolerance, learningRate)) {
+      if (!willNeuronMakeAdjustments(neuron, targetValue, learningRate)) {
         continue;
       }
 
@@ -844,9 +896,9 @@
       while (neuronIterations < maxIterationsPerNeuron) {
         recomputeNetwork();
         const currentOutput = outputLayer[0].value;
-        const error = currentOutput - targetValue;
+        const outputDelta = computeOutputLossDelta(currentOutput, targetValue);
 
-        if (Math.abs(error) <= tolerance) {
+        if (isOutputCorrectForTarget(currentOutput, targetValue)) {
           overallSuccess = true;
           break;
         }
@@ -860,7 +912,7 @@
           if (!Number.isFinite(gradient) || gradient === 0) {
             continue;
           }
-          const weightDelta = learningRate * error * gradient;
+          const weightDelta = learningRate * outputDelta * gradient;
           if (weightDelta === 0) {
             continue;
           }
@@ -919,8 +971,7 @@
     // Check final result
     const finalOutputLayer = neuronsByLayer[neuronsByLayer.length - 1];
     const finalOutput = finalOutputLayer[0].value;
-    const finalError = Math.abs(finalOutput - targetValue);
-    overallSuccess = finalError <= tolerance;
+    overallSuccess = isOutputCorrectForTarget(finalOutput, targetValue);
 
     if (overallSuccess) {
       setStatus('Rejtett neuronok súlyai sikeresen beállítva!');
@@ -939,6 +990,7 @@
     }
     const outputLayer = neuronsByLayer[lastLayerIndex];
     outputLayer.forEach((_, neuronIndex) => {
+      // The sigmoid derivative is already included in computeOutputLossDelta().
       gradients[lastLayerIndex][neuronIndex] = 1;
     });
 
@@ -958,11 +1010,11 @@
   }
 
   function adjustNetworkToTargetOutput(targetValue, options = {}) {
-    if (!Number.isFinite(targetValue)) {
+    if (!Number.isFinite(targetValue) || targetValue < 0 || targetValue > 1) {
       return false;
     }
     const { limitToHiddenLayers = false } = options;
-    const tolerance = 0.01;
+    const tolerance = outputTargetTolerance;
     const maxIterations = 200;
     const learningRate = 0.03;
     let success = false;
@@ -975,8 +1027,8 @@
         break;
       }
       const outputNeuron = outputLayer[0];
-      const error = outputNeuron.value - targetValue;
-      if (Math.abs(error) <= tolerance) {
+      const outputDelta = computeOutputLossDelta(outputNeuron.value, targetValue);
+      if (Math.abs(outputDelta) <= tolerance) {
         success = true;
         break;
       }
@@ -992,7 +1044,7 @@
         if (!Number.isFinite(gradient) || gradient === 0) {
           return;
         }
-        const weightDelta = learningRate * error * gradient;
+        const weightDelta = learningRate * outputDelta * gradient;
         if (weightDelta === 0) {
           return;
         }
@@ -1186,6 +1238,8 @@
     return {
       lines,
       summaryParts,
+      preActivation: neuron.preActivation,
+      usesSigmoid: neuron.layerIndex === layerSizes.length - 1,
       note: ''
     };
   }
@@ -1210,9 +1264,14 @@
       .join('');
 
     const summaryText = expression.summaryParts.join(' + ');
+    const weightedSumMarkup = '<div class="neuron-expression-summary">' + summaryText + ' = <strong>' + formatNumber(expression.preActivation) + '</strong></div>';
+    const activationMarkup = expression.usesSigmoid
+      ? '<div class="neuron-expression-summary">szigmoid(' + formatNumber(expression.preActivation) + ') = <strong>' + formatNumber(neuron.value) + '</strong></div>'
+      : '';
     neuronExpressionEl.innerHTML =
       '<div class="neuron-expression-list">' + lineMarkup + '</div>' +
-      '<div class="neuron-expression-summary">' + summaryText + ' = <strong>' + formatNumber(neuron.value) + '</strong></div>';
+      weightedSumMarkup +
+      activationMarkup;
 
     const expressionLines = neuronExpressionEl.querySelectorAll('.neuron-expression-line');
     expressionLines.forEach((lineEl) => {
